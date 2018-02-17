@@ -1,3 +1,22 @@
+/* Needed for ELECTRON */
+
+const {app, BrowserWindow} = require('electron');
+const url = require('url');
+const path = require('path');
+
+let win;
+
+function createWindow() {
+    win = new BrowserWindow({width: 1000, height: 1000});
+    win.loadURL(url.format({
+        pathname: path.join(__dirname, 'index.html'),
+        protocol: 'file:',
+        slashes: true
+    }))
+}
+
+app.on('ready', createWindow);
+
 
 'use strict';
 
@@ -87,8 +106,8 @@ var makeTransaction = (timestamp, inputs, outputs, sks) => {
     var signature;
     sks.forEach((sk) => {
         signature = ecdsa.sign(msgHash, sk).toDER('hex');
-        signatures.push(signature);
-    });
+    signatures.push(signature);
+});
     var t = new Transaction(msgHash, timestamp, inputs, outputs, signatures);
     return (t);
 }
@@ -98,7 +117,11 @@ var calculateHashForBlock = (block) => {
 };
 
 var calculateHash = (index, previousHash, timestamp, nonce, data, difficulty_a, difficulty_b) => {
+
+
     return CryptoJS.SHA256(index + previousHash + timestamp + nonce + data + difficulty_a + difficulty_b).toString();
+
+
 };
 
 var getGenesisBlock = () => {
@@ -123,6 +146,7 @@ var getGenesisBlock = () => {
     console.log('genesis hash: ' + calculateHashForBlock(block));
     return block;
 };
+
 
 var saveChain = (data) => {
 
@@ -229,92 +253,98 @@ var initHttpServer = () => {
 
     app.get('/blocks', (req, res) => {
         console.log('GET /blocks');
-        res.set("Connection", "close");
-        res.send(JSON.stringify(blockchain));
-    });
+    res.set("Connection", "close");
+    res.send(JSON.stringify(blockchain));
+});
 
     app.get('/transactions', (req, res) => {
         console.log('GET /transactions');
-        res.set("Connection", "close");
-        res.send(JSON.stringify(transactions))
-    });
+    res.set("Connection", "close");
+    res.send(JSON.stringify(transactions))
+});
 
 
     app.post('/mineBlock', (req, res) => {
         console.log('POST /mineBlock');
-        var miner_pk = req.body.minerPK;
-        var max_time_s = parseInt(req.body.maxSeconds);
-        console.log('miner_pk=' + miner_pk);
-        console.log('max_time_s' + max_time_s);
-        var newBlock = generateNextBlock(transactions, miner_pk, max_time_s);
-        if (newBlock) {
-            if (addBlock(newBlock) == true) {
-                broadcast(responseLatestBlockMsg());
-                console.log('block added: ' + JSON.stringify(newBlock));
-                res.set("Connection", "close");
-                res.send(JSON.stringify(newBlock));
-            }
-            else {
-                res.set("Connection", "close");
-                res.send('could not mine block in the given time(1).');
-            }
+    var miner_pk = req.body.minerPK;
+    var max_time_s = parseInt(req.body.maxSeconds);
+
+
+    console.log('miner_pk=' + miner_pk);
+    console.log('max_time_s' + max_time_s);
+
+
+    var newBlock = generateNextBlock(transactions, miner_pk, max_time_s);
+
+
+    if (newBlock) {
+        if (addBlock(newBlock) == true) {
+            broadcast(responseLatestBlockMsg());
+            console.log('block added: ' + JSON.stringify(newBlock));
+            res.set("Connection", "close");
+            res.send(JSON.stringify(newBlock));
         }
         else {
-            console.log('could not mine a block in the given time(2).');
             res.set("Connection", "close");
-            res.send('could not mine block.');
+            res.send('could not mine block in the given time(1).');
         }
-    });
+    }
+    else {
+        console.log('could not mine a block in the given time(2).');
+        res.set("Connection", "close");
+        res.send('could not mine block.');
+    }
+});
 
     app.post('/balance', (req, res) => {
         console.log('POST /balance');
-        var pk = req.body.pk;
-        console.log('pk=' + pk);
-        var outputs = getUnspentOutputs(pk);
-        res.set("Connection", "close");
-        res.send(JSON.stringify(outputs));
-    });
+    var pk = req.body.pk;
+    console.log('pk=' + pk);
+    var outputs = getUnspentOutputs(pk);
+    res.set("Connection", "close");
+    res.send(JSON.stringify(outputs));
+});
 
     app.post('/hash', (req, res) => {
         console.log('POST /hash');
-        var pk = req.body.pk;
-        var hash = CryptoJS.SHA256(pk).toString();
-        res.set("Connection", "close");
-        res.send(hash);
-    });
+    var pk = req.body.pk;
+    var hash = CryptoJS.SHA256(pk).toString();
+    res.set("Connection", "close");
+    res.send(hash);
+});
 
     app.get('/peers', (req, res) => {
         res.set("Connection", "close");
-        res.send(sockets.map(s => s._socket.remoteAddress + ':' + s._socket.remotePort));
-    });
+    res.send(sockets.map(s => s._socket.remoteAddress + ':' + s._socket.remotePort));
+});
 
     app.post('/addPeer', (req, res) => {
         connectToPeers([req.body.peer]);
-        res.set("Connection", "close");
-        res.send();
-    });
+    res.set("Connection", "close");
+    res.send();
+});
 
     app.get('/newWallet', (req, res) => {
         var keys = ecdsa.genKeyPair();
-        var pk = keys.getPublic('hex');
-        var sk = keys.getPrivate('hex');
-        res.set("Connection", "close");
-        res.send(JSON.stringify({ 'sk': sk, 'pk': pk }));
-    });
+    var pk = keys.getPublic('hex');
+    var sk = keys.getPrivate('hex');
+    res.set("Connection", "close");
+    res.send(JSON.stringify({ 'sk': sk, 'pk': pk }));
+});
 
     app.post('/pay', (req, res) => {
         console.log('POST /pay');
-        var inputs = req.body.inputs;
-        var outputs = req.body.outputs;
-        var secret_keys = req.body.secret_keys;
-        var timestamp = getTimestamp();
-        var newTransaction = makeTransaction(timestamp, inputs, outputs, secret_keys);
-        addTransaction(newTransaction);
-        broadcast(responseLatestTransactionMsg(newTransaction));
-        console.log('transaction added: ' + JSON.stringify(newTransaction));
-        res.set("Connection", "close");
-        res.send();
-    });
+    var inputs = req.body.inputs;
+    var outputs = req.body.outputs;
+    var secret_keys = req.body.secret_keys;
+    var timestamp = getTimestamp();
+    var newTransaction = makeTransaction(timestamp, inputs, outputs, secret_keys);
+    addTransaction(newTransaction);
+    broadcast(responseLatestTransactionMsg(newTransaction));
+    console.log('transaction added: ' + JSON.stringify(newTransaction));
+    res.set("Connection", "close");
+    res.send();
+});
 
     app.listen(http_port, () => console.log('listening for http on port ' + http_port));
 
@@ -344,7 +374,7 @@ var initConnection = (ws) => {
     //    write(ws, queryLatestBlockMsg());
     //    console.log('pinging..');
     //    write(ws, queryAllTransactionsMsg());
-        
+
     //}, 1000 * 10);
 
 
@@ -353,28 +383,28 @@ var initConnection = (ws) => {
 var initMessageHandler = (ws) => {
     ws.on('message', (data) => {
         var message = JSON.parse(data);
-        console.log('Received message' + JSON.stringify(message));
-        switch (message.type) {
-            case MessageType.QUERY_LATEST_BLOCK:
-                write(ws, responseLatestBlockMsg());
-                break;
-            case MessageType.QUERY_ALL_BLOCKS:
-                write(ws, responseAllBlocksMsg());
-                break;
-            case MessageType.QUERY_LATEST_TRANSACTION:
-                write(ws, responseLatestTransactionsMsg());
-                break;
-            case MessageType.QUERY_ALL_TRANSACTIONS:
-                write(ws, responseAllTransactionsMsg());
-                break;
-            case MessageType.RESPONSE_BLOCKCHAIN:
-                handleBlockchainResponse(message);
-                break;
-            case MessageType.RESPONSE_TRANSACTION:
-                handleTransactionResponse(message);
-                break;
-        }
-    });
+    console.log('Received message' + JSON.stringify(message));
+    switch (message.type) {
+        case MessageType.QUERY_LATEST_BLOCK:
+            write(ws, responseLatestBlockMsg());
+            break;
+        case MessageType.QUERY_ALL_BLOCKS:
+            write(ws, responseAllBlocksMsg());
+            break;
+        case MessageType.QUERY_LATEST_TRANSACTION:
+            write(ws, responseLatestTransactionsMsg());
+            break;
+        case MessageType.QUERY_ALL_TRANSACTIONS:
+            write(ws, responseAllTransactionsMsg());
+            break;
+        case MessageType.RESPONSE_BLOCKCHAIN:
+            handleBlockchainResponse(message);
+            break;
+        case MessageType.RESPONSE_TRANSACTION:
+            handleTransactionResponse(message);
+            break;
+    }
+});
 };
 
 var initErrorHandler = (ws) => {
@@ -423,8 +453,8 @@ var generateNextBlock = (transactions, miner_pk, max_time_s) => {
     }
     else {
         difficulty = [1, 0xf];
-    }    
-    while (!isValidHashDifficulty(nextHash, difficulty)) {        
+    }
+    while (!isValidHashDifficulty(nextHash, difficulty)) {
         now = getTimestamp();
         if ((now - t) > max_time_s) {
             //ran out of time
@@ -559,7 +589,7 @@ var addTransaction = (newTransaction) => {
     }
 };
 
-var isValidNewBlock = (somechain, newBlock, previousBlock, prevBlock2) => {    
+var isValidNewBlock = (somechain, newBlock, previousBlock, prevBlock2) => {
     var difficulty =  [1, 0xf];
     if (prevBlock2) {
         difficulty = getDifficulty(somechain, previousBlock, prevBlock2);
@@ -578,7 +608,7 @@ var isValidNewBlock = (somechain, newBlock, previousBlock, prevBlock2) => {
         return false;
     } else if (previousBlock.timestamp >= newBlock.timestamp) {
         console.log('invalid timestamp - must be after prevblock');
-        return false;        
+        return false;
     } else if (newBlock.timestamp > getTimestamp()) {
         console.log('invalid timestamp - must be in the past');
         return false;
@@ -624,19 +654,19 @@ var connectToPeers = (newPeers) => {
     newPeers.forEach((peer) => {
         try {
             var ws = new WebSocket(peer);
-            ws.on('open', () => {
-                initConnection(ws);
-                console.log('connected to peer ' + peer);
-            });
-            ws.on('error', () => {
-                console.log('connection failed');
-            });
-        }
-        catch (err) {
-            console.log('ERROR: bad peer: ' + peer);
-        }
+    ws.on('open', () => {
+        initConnection(ws);
+    console.log('connected to peer ' + peer);
+});
+    ws.on('error', () => {
+        console.log('connection failed');
+});
+}
+catch (err) {
+        console.log('ERROR: bad peer: ' + peer);
+    }
 
-    });
+});
 };
 
 var handleBlockchainResponse = (message) => {
@@ -755,7 +785,7 @@ var isValidChain = (blockchainToValidate) => {
     var tempBlocks = [blockchainToValidate[0]];
     for (var i = 1; i < blockchainToValidate.length; i++) {
         console.log('validating block ' + i + '...');
-        var prev1 = tempBlocks[i - 1];    
+        var prev1 = tempBlocks[i - 1];
         var prev2 = null;
         if (tempBlocks.length > 1) {
             prev2 = tempBlocks[i - 2];
@@ -1119,12 +1149,12 @@ var getTransactionInBlock = (fromBlock, txHash) => {
     var len = data.length;
     for (var i = 0; i < len; i++) {
         var transaction;
-        if (typeof data[i] === 'string' || data[i] instanceof String) {            
+        if (typeof data[i] === 'string' || data[i] instanceof String) {
             transaction = JSON.parse(data[i]);
         }
         else {
             transaction = data[i];
-        }        
+        }
         if (txHash == transaction.hash) {
             //found transaction
             return (transaction);
@@ -1200,3 +1230,5 @@ connectToPeers(initialPeers);
 initHttpServer();
 
 initP2PServer();
+
+

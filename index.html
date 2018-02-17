@@ -3,6 +3,7 @@
     <title>basechain.io</title>
     <script src="repeater.min.js"></script>
     <script src="jquery-3.2.1.min.js"></script>
+    <script>window.$ = window.jQuery = require('jquery');</script>
     <link rel="stylesheet" type="text/css" href="index.css" />
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600" rel="stylesheet">
 </head>
@@ -498,6 +499,37 @@
         function saveKeys() {
             localStorage.setItem("keys", JSON.stringify(keys));
         }
+
+
+        /* WEB WORKER */
+
+
+        var w;
+
+        function startWorker() {
+
+            if (typeof(Worker) !== "undefined") {
+                if (typeof(w) == "undefined") {
+                    w = new Worker("base.js");
+                }
+
+                w.onmessage = function (event) {
+                    alert(event.data);
+
+                };
+            } else {
+                alert("Sorry, your browser does not support Web Workers...");
+            }
+        }
+
+        function stopWorker() {
+            w.terminate();
+            w = undefined;
+        }
+
+        startWorker();
+
+
     </script>
 
 </body>
