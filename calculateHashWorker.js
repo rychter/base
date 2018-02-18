@@ -1,12 +1,16 @@
 postMessage("mining started.");
 
 var dataRecived;
+var objRecived;
+
 
 onmessage = function (e) {
     // the passed-in data is available via e.data
     dataRecived = e.data;
     postMessage("data received");
     postMessage(dataRecived);
+
+    objRecived = JSON.parse(e.data);
 
 };
 

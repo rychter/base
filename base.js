@@ -536,13 +536,13 @@ var generateNextBlock = (transactions, miner_pk, max_time_s) => {
             alert("window.Worker starts");
 
             if(typeof(w) == "undefined") {
-                w = new Worker("mine.js");
+                w = new Worker("calculateHashWorker.js");
             }
             w.onmessage = function(event) {
                 alert(event.data);
             };
 
-            w.postMessage([first.value,second.value]);
+            w.postMessage(JSON.stringify({"nextHash":nextHash, "difficulty":difficulty}));
 
 
         } else {
