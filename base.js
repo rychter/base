@@ -324,6 +324,7 @@ var initHttpServer = () => {
 
 
         console.log('POST /mineBlock');
+
     var miner_pk = req.body.minerPK;
     var max_time_s = parseInt(req.body.maxSeconds);
 
@@ -482,6 +483,8 @@ var initErrorHandler = (ws) => {
 };
 
 var generateNextBlock = (transactions, miner_pk, max_time_s) => {
+
+
     var t = getTimestamp();
     var previousBlock = getLatestBlock();
     var nextIndex = previousBlock.index + 1;
@@ -514,6 +517,52 @@ var generateNextBlock = (transactions, miner_pk, max_time_s) => {
     else {
         difficulty = [1, 0xf];
     }
+
+
+
+
+
+    let w;
+
+    alert("WEB WORKER START");
+
+
+    function startWorker() {
+
+        alert("window.Worker if statment");
+
+        if(window.Worker) {
+
+            alert("window.Worker starts");
+
+            if(typeof(w) == "undefined") {
+                w = new Worker("mine.js");
+            }
+            w.onmessage = function(event) {
+                alert(event.data);
+            };
+
+            w.postMessage([first.value,second.value]);
+
+
+        } else {
+            console.log("Sorry! No Web Worker support.");
+        }
+    }
+
+    function stopWorker() {
+        w.terminate();
+        w = undefined;
+    }
+
+    alert("WEB WORKER FINISH");
+
+    startWorker();
+
+
+
+
+
     while (!isValidHashDifficulty(nextHash, difficulty)) {
         now = getTimestamp();
         if ((now - t) > max_time_s) {
@@ -523,10 +572,20 @@ var generateNextBlock = (transactions, miner_pk, max_time_s) => {
         nonce = nonce + 1;
         nextHash = calculateHash(nextIndex, previousBlock.hash, nextTimestamp, nonce, transactions_and_coinbase, difficulty[0], difficulty[1]);
     }
+
+
+
+
     //success - block mined
     console.log(getTimestamp() + ' mined block. nonce/hash = ' + nonce + ' ' + nextHash);
     return new Block(nextIndex, previousBlock.hash, nextTimestamp, transactions_and_coinbase, nonce, nextHash, difficulty[0], difficulty[1]);
 };
+
+
+
+
+
+
 
 var isValidHashDifficulty = (hash, difficulty) => {
     //difficulty is a 2-element array (a and b)
