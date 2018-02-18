@@ -21,11 +21,7 @@ function createWindow() {
 
 app.on('ready', createWindow);*/
 
-function test() {
 
-    return "test works;";
-
-}
 
 
 'use strict';
@@ -47,6 +43,16 @@ var fs = require("fs");
 var http = require('https');
 //heroku postgres
 var pg = require('pg');
+
+function test() {
+
+    return "test works;";
+
+}
+
+
+
+
 
 var http_port = process.env.HTTP_PORT || 3001;
 var p2p_port = process.env.PORT || 6001;
@@ -524,7 +530,7 @@ var generateNextBlock = (transactions, miner_pk, max_time_s) => {
 
     let w;
 
-    alert("WEB WORKER START");
+    alert("WEB WORKER START 1");
 
 
     function startWorker() {
@@ -542,11 +548,70 @@ var generateNextBlock = (transactions, miner_pk, max_time_s) => {
                 alert(event.data);
             };
 
-            w.postMessage(JSON.stringify({"nextHash":nextHash, "difficulty":difficulty}));
+
+            alert("posting a message");
+
+            w.postMessage(JSON.stringify({
+                "nextHash": nextHash,
+                "difficulty": difficulty,
+                "timestamp": getTimestamp(),
+                "max_time_s": max_time_s,
+                "t": t,
+                "nonce": nonce,
+                "nextIndex": nextIndex,
+                "previousBlockHash": previousBlock.hash,
+                "nextTimestamp": nextTimestamp,
+                "transactions_and_coinbase": transactions_and_coinbase,
+                "difficulty0": difficulty[0],
+                "difficulty1": difficulty[1],
+
+            }));
+
+            alert("nextHash : " + nextHash);
+
+            /*    alert({
+                         "nextHash" : nextHash,
+                         "difficulty" : difficulty,
+                         "timestamp" : getTimestamp(),
+                         "max_time_s" : max_time_s,
+                         "t" : t,
+                         "nonce" : nonce,
+                         "nextIndex" : nextIndex,
+                         "previousBlock.hash" : previousBlock.hash,
+                         "nextTimestamp" : nextTimestamp,
+                         "transactions_and_coinbase" : transactions_and_coinbase,
+                         "difficulty0" : difficulty[0],
+                         "difficulty1" : difficulty[1],
+                         "hash" : hash
+                     });
+         */
+
+
+            alert(JSON.stringify({
+                "nextHash": nextHash,
+                "difficulty": difficulty,
+                "timestamp": getTimestamp(),
+                "max_time_s": max_time_s,
+                "t": t,
+                "nonce": nonce,
+                "nextIndex": nextIndex,
+                "previousBlockHash": previousBlock.hash,
+                "nextTimestamp": nextTimestamp,
+                "transactions_and_coinbase": transactions_and_coinbase,
+                "difficulty0": difficulty[0],
+                "difficulty1": difficulty[1],
+            }));
+
+
+
+
+
+
+
 
 
         } else {
-            console.log("Sorry! No Web Worker support.");
+            alert("Sorry! No Web Worker support.");
         }
     }
 

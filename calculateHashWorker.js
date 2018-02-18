@@ -1,33 +1,109 @@
-postMessage("mining started.");
+postMessage("in calculateHashWorker.js");
+
+
+var CryptoJS = require("crypto-js");
+
+
+postMessage("CryptoJS");
+
 
 var dataRecived;
 var objRecived;
 
 
+var nextHash;
+var difficulty;
+var getTimestamp;
+var max_time_s;
+var t;
+var nonce;
+var nextIndex;
+var previousBlockHash;
+var nextTimestamp;
+var transactions_and_coinbase;
+var difficulty0;
+var difficulty1;
+var hash;
+
+
+/*"nextHash" : nextHash,
+    "difficulty" : difficulty,
+    "timestamp" : getTimestamp(),
+    "max_time_s" : max_time_s,
+    "t" : t,
+    "nonce" : nonce,
+    "nextIndex" : nextIndex,
+    "previousBlockHash" : previousBlock.hash,
+    "nextTimestamp" : nextTimestamp,
+    "transactions_and_coinbase" : transactions_and_coinbase,
+    "difficulty0" : difficulty[0],
+    "difficulty1" : difficulty[1]*/
+
+
 onmessage = function (e) {
-    // the passed-in data is available via e.data
+
     dataRecived = e.data;
     postMessage("data received");
-    postMessage(dataRecived);
+
 
     objRecived = JSON.parse(e.data);
+
+    nextHash = objRecived["nextHash"];
+    difficulty = objRecived["difficulty"];
+
+    getTimestamp = objRecived["getTimestamp"];
+    max_time_s = objRecived["max_time_s"];
+    t = objRecived["t"];
+    nonce = objRecived["nonce"];
+    nextIndex = objRecived["nextIndex"];
+    previousBlockHash = objRecived["previousBlockHash"];
+    nextTimestamp = objRecived["nextTimestamp"];
+    transactions_and_coinbase = objRecived["transactions_and_coinbase"];
+    difficulty0 = objRecived["difficulty0"];
+    difficulty1 = objRecived["difficulty1"];
+
+    hash = nextHash;
+
+    postMessage(" difficulty" + difficulty);
+    postMessage("message recived " + e.data);
+
+
+    startMining();
+
+
 
 };
 
 
-while (!isValidHashDifficulty(nextHash, difficulty)) {
-    now = getTimestamp();
-    if ((now - t) > max_time_s) {
-        //ran out of time
-        return null;
-    }
+startMining = function () {
+
+    postMessage("Before while loop");
+
+    /*   while (!isValidHashDifficulty(nextHash, difficulty)) {*/
+
+
+    /*    var now = getTimestamp();
+        if ((now - t) > max_time_s) {
+            //ran out of time
+            return null;
+        }*/
     nonce = nonce + 1;
-    nextHash = calculateHash(nextIndex, previousBlock.hash, nextTimestamp, nonce, transactions_and_coinbase, difficulty[0], difficulty[1]);
+    postMessage("SUCCESS : " + calculateHash(nextIndex, previousBlockHash, nextTimestamp, nonce, transactions_and_coinbase, difficulty0, difficulty1));
+
+    /* nextHash = calculateHash(nextIndex, previousBlockHash, nextTimestamp, nonce, transactions_and_coinbase, difficulty0, difficulty1)*/
 }
 
+calculateHash = function (index, previousHash, timestamp, nonce, data, difficulty_a, difficulty_b) {
 
-var isValidHashDifficulty = (hash, difficulty) =
->
+
+    return CryptoJS.SHA256(index + previousHash + timestamp + nonce + data + difficulty_a + difficulty_b).toString();
+
+
+};
+
+
+/*
+var isValidHashDifficulty = (hash, difficulty) =>
 {
     //difficulty is a 2-element array (a and b)
     if (hash == '') {
@@ -37,13 +113,14 @@ var isValidHashDifficulty = (hash, difficulty) =
         return false;
     }
     //check first digit
-    var digit_hex = hash.charAt(difficulty[0]);
+    var digit_hex = hash.charAt(difficulty0);
     var digit_dec = parseInt(digit_hex, 16);
     if (isNaN(digit_dec)) {
         digit_dec = 15;
     }
-    if (digit_dec > difficulty[1]) {
+    if (digit_dec > difficulty1) {
         return false;
     }
     return true;
-}
+}*!/
+*/
