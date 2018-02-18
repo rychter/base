@@ -3,9 +3,56 @@
     <title>basechain.io</title>
     <script src="repeater.min.js"></script>
     <script src="jquery-3.2.1.min.js"></script>
+
     <script>window.$ = window.jQuery = require('jquery');</script>
     <link rel="stylesheet" type="text/css" href="index.css" />
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600" rel="stylesheet">
+
+
+    <script src="base.js"></script>
+
+
+    <script> alert(test()); </script>
+
+
+    <!--    <script>
+
+            var w;
+
+            alert("WEB WORKER")
+
+            function startWorker() {
+                if(typeof(Worker) !== "undefined") {
+                    if(typeof(w) == "undefined") {
+                        w = new Worker("base.js");
+                    }
+                    w.onmessage = function(event) {
+                        alert(event.data);
+                    };
+                } else {
+                    alert("Sorry! No Web Worker support.");
+                }
+            }
+
+            function stopWorker() {
+                w.terminate();
+                w = undefined;
+            }
+
+            startWorker();
+
+
+        </script>-->
+
+
+
+
+
+
+
+
+
+
 </head>
 <body>
 
@@ -148,6 +195,8 @@
     </div>
 
     <script>
+
+
         var keys = JSON.parse(localStorage.getItem('keys') || '[]');
         var transactions = [];
         var g_outputs = [];
@@ -503,31 +552,31 @@
 
         /* WEB WORKER */
 
+        /*
+                var w;
 
-        var w;
+                function startWorker() {
 
-        function startWorker() {
+                    if (typeof(Worker) !== "undefined") {
+                        if (typeof(w) == "undefined") {
+                            w = new Worker("base.js");
+                        }
 
-            if (typeof(Worker) !== "undefined") {
-                if (typeof(w) == "undefined") {
-                    w = new Worker("base.js");
+                        w.onmessage = function (event) {
+                            alert(event.data);
+
+                        };
+                    } else {
+                        alert("Sorry, your browser does not support Web Workers...");
+                    }
                 }
 
-                w.onmessage = function (event) {
-                    alert(event.data);
+                function stopWorker() {
+                    w.terminate();
+                    w = undefined;
+                }
 
-                };
-            } else {
-                alert("Sorry, your browser does not support Web Workers...");
-            }
-        }
-
-        function stopWorker() {
-            w.terminate();
-            w = undefined;
-        }
-
-        startWorker();
+                startWorker();*/
 
 
     </script>

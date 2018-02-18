@@ -4,10 +4,14 @@ const {app, BrowserWindow} = require('electron');
 const url = require('url');
 const path = require('path');
 
-let win;
+/*let win;
 
 function createWindow() {
-    win = new BrowserWindow({width: 1000, height: 1000});
+    win = new BrowserWindow({width: 1000, height: 1000}, {
+        webPreferences: {
+            nodeIntegrationInWorker: true
+        }
+    });
     win.loadURL(url.format({
         pathname: path.join(__dirname, 'index.html'),
         protocol: 'file:',
@@ -15,7 +19,13 @@ function createWindow() {
     }))
 }
 
-app.on('ready', createWindow);
+app.on('ready', createWindow);*/
+
+function test() {
+
+    return "test works;";
+
+}
 
 
 'use strict';
@@ -55,6 +65,52 @@ var MessageType = {
     RESPONSE_BLOCKCHAIN: 4,
     RESPONSE_TRANSACTION: 5
 };
+
+
+/*
+
+let w;
+
+alert("WEB WORKER START");
+
+
+function startWorker() {
+
+    alert("window.Worker if statment");
+
+    if(window.Worker) {
+
+        alert("window.Worker starts");
+
+        if(typeof(w) == "undefined") {
+            w = new Worker("mine.js");
+        }
+        w.onmessage = function(event) {
+            alert(event.data);
+        };
+    } else {
+        console.log("Sorry! No Web Worker support.");
+    }
+}
+
+function stopWorker() {
+    w.terminate();
+    w = undefined;
+}
+
+alert("WEB WORKER FINISH");
+
+startWorker();
+*/
+
+
+
+
+
+
+
+
+
 
 class Block {
     constructor(index, previousHash, timestamp, data, nonce, hash, difficulty_a, difficulty_b) {
@@ -265,6 +321,8 @@ var initHttpServer = () => {
 
 
     app.post('/mineBlock', (req, res) => {
+
+
         console.log('POST /mineBlock');
     var miner_pk = req.body.minerPK;
     var max_time_s = parseInt(req.body.maxSeconds);
@@ -294,6 +352,8 @@ var initHttpServer = () => {
         res.set("Connection", "close");
         res.send('could not mine block.');
     }
+
+
 });
 
     app.post('/balance', (req, res) => {
